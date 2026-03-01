@@ -6,6 +6,7 @@ set(VENOM_PLUGIN_SOURCES
 set(VENOM_DSP_HEADERS
   VenomShared.hpp
   core/SynthEngine.hpp
+  preset/PresetManager.hpp
   dsp/Oscillator.hpp
   dsp/EnvelopeADSR.hpp
   dsp/Lowpass24.hpp

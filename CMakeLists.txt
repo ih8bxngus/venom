@@ -43,4 +43,12 @@ if(VENOM_BUILD_TESTS)
   add_executable(venom_midi_all_notes_off tests/midi_all_notes_off.cpp)
   target_link_libraries(venom_midi_all_notes_off PRIVATE venom_dsp)
   add_test(NAME venom_midi_all_notes_off COMMAND venom_midi_all_notes_off)
+
+  add_executable(venom_preset_roundtrip tests/preset_roundtrip.cpp)
+  target_link_libraries(venom_preset_roundtrip PRIVATE venom_dsp)
+  add_test(NAME venom_preset_roundtrip COMMAND venom_preset_roundtrip)
+
+  add_executable(venom_preset_factory_bank tests/preset_factory_bank.cpp)
+  target_link_libraries(venom_preset_factory_bank PRIVATE venom_dsp)
+  add_test(NAME venom_preset_factory_bank COMMAND venom_preset_factory_bank)
 endif()

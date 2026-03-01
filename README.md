@@ -14,10 +14,15 @@ This milestone provides a functional, testable synth core and a plugin wrapper w
   - Sine LFO (0.1 Hz to 20 Hz).
 - `SynthVoice` + `SynthEngine` path:
   - MIDI note-on/off handling.
+  - Last-note priority fallback for mono note stacks.
+  - All-notes-off handling (CC120/CC123).
   - 3-oscillator mixing.
   - Amp/filter envelopes.
   - LFO target routing (pitch/cutoff).
   - Output drive + soft clipping + master volume.
+- JSON preset system:
+  - save/load presets via `PresetManager`.
+  - 10 starter factory presets under `presets/`.
 - Plugin wrapper now delegates rendering to `SynthEngine` to keep host and test paths aligned.
 - Core tests:
   - `venom_core_smoke`
@@ -25,6 +30,8 @@ This milestone provides a functional, testable synth core and a plugin wrapper w
   - `venom_midi_note_off`
   - `venom_midi_last_note_priority`
   - `venom_midi_all_notes_off`
+  - `venom_preset_roundtrip`
+  - `venom_preset_factory_bank`
 
 ## Get DPF (submodule)
 
