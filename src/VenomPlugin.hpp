@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <string>
 #include <vector>
 
 #include "DistrhoPlugin.hpp"
@@ -24,6 +25,10 @@ protected:
   float getParameterValue(uint32_t index) const override;
   void setParameterValue(uint32_t index, float value) override;
 
+  void initState(uint32_t index, String& key, String& defaultValue) override;
+  String getState(const char* key) const override;
+  void setState(const char* key, const char* value) override;
+
   void activate() override;
   void run(const float** inputs, float** outputs, uint32_t frames, const MidiEvent* midiEvents, uint32_t midiEventCount) override;
 
@@ -33,4 +38,5 @@ private:
   std::array<float, venom::kParameterCount> params_{};
   venom::core::SynthEngine engine_{};
   std::vector<venom::core::MidiEvent> midiScratch_{};
+  std::string currentPresetName_ = "Init";
 };

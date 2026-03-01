@@ -51,4 +51,8 @@ if(VENOM_BUILD_TESTS)
   add_executable(venom_preset_factory_bank tests/preset_factory_bank.cpp)
   target_link_libraries(venom_preset_factory_bank PRIVATE venom_dsp)
   add_test(NAME venom_preset_factory_bank COMMAND venom_preset_factory_bank)
+
+  add_executable(venom_preset_invalid_json tests/preset_invalid_json.cpp)
+  target_link_libraries(venom_preset_invalid_json PRIVATE venom_dsp)
+  add_test(NAME venom_preset_invalid_json COMMAND venom_preset_invalid_json)
 endif()

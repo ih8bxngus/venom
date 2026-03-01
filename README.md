@@ -32,6 +32,7 @@ This milestone provides a functional, testable synth core and a plugin wrapper w
   - `venom_midi_all_notes_off`
   - `venom_preset_roundtrip`
   - `venom_preset_factory_bank`
+  - `venom_preset_invalid_json`
 
 ## Get DPF (submodule)
 

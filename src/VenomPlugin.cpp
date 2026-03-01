@@ -1,6 +1,9 @@
 #include "VenomPlugin.hpp"
 
 #include <algorithm>
+#include <cstring>
+
+#include "preset/PresetManager.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -49,10 +52,18 @@ const char* parameterName(uint32_t index) {
   }
 }
 
+venom::preset::Preset makePreset(const std::array<float, venom::kParameterCount>& params, const std::string& name) {
+  venom::preset::Preset preset;
+  preset.name = name;
+  preset.params = params;
+  preset.version = 1;
+  return preset;
+}
+
 } // namespace
 
 VenomPlugin::VenomPlugin()
-    : Plugin(venom::kParameterCount, 0, 0) {
+    : Plugin(venom::kParameterCount, 0, 1) {
   params_.fill(0.0f);
 
   params_[venom::kParamMasterVolume] = 0.8f;
@@ -101,7 +112,7 @@ const char* VenomPlugin::getDescription() const { return "3-oscillator trap/hype
 const char* VenomPlugin::getMaker() const noexcept { return "venom"; }
 const char* VenomPlugin::getHomePage() const noexcept { return "https://github.com/example/venom"; }
 const char* VenomPlugin::getLicense() const noexcept { return "MIT"; }
-uint32_t VenomPlugin::getVersion() const noexcept { return d_version(0, 3, 0); }
+uint32_t VenomPlugin::getVersion() const noexcept { return d_version(0, 4, 0); }
 int64_t VenomPlugin::getUniqueId() const noexcept { return d_cconst('v', 'n', 'm', '1'); }
 
 void VenomPlugin::initParameter(uint32_t index, Parameter& parameter) {
@@ -194,6 +205,36 @@ void VenomPlugin::setParameterValue(uint32_t index, float value) {
     return;
 
   params_[index] = value;
+  syncParameters();
+}
+
+void VenomPlugin::initState(uint32_t index, String& key, String& defaultValue) {
+  if (index != 0)
+    return;
+
+  key = "preset_json";
+  const auto json = venom::preset::PresetManager::toJson(makePreset(params_, currentPresetName_));
+  defaultValue = json.c_str();
+}
+
+String VenomPlugin::getState(const char* key) const {
+  if (std::strcmp(key, "preset_json") != 0)
+    return String();
+
+  const auto json = venom::preset::PresetManager::toJson(makePreset(params_, currentPresetName_));
+  return String(json.c_str());
+}
+
+void VenomPlugin::setState(const char* key, const char* value) {
+  if (std::strcmp(key, "preset_json") != 0 || value == nullptr)
+    return;
+
+  venom::preset::Preset loaded;
+  if (!venom::preset::PresetManager::fromJson(value, loaded))
+    return;
+
+  params_ = loaded.params;
+  currentPresetName_ = loaded.name.empty() ? "Imported" : loaded.name;
   syncParameters();
 }
 
