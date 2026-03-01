@@ -35,4 +35,12 @@ if(VENOM_BUILD_TESTS)
   add_executable(venom_midi_note_off tests/midi_note_off.cpp)
   target_link_libraries(venom_midi_note_off PRIVATE venom_dsp)
   add_test(NAME venom_midi_note_off COMMAND venom_midi_note_off)
+
+  add_executable(venom_midi_last_note_priority tests/midi_last_note_priority.cpp)
+  target_link_libraries(venom_midi_last_note_priority PRIVATE venom_dsp)
+  add_test(NAME venom_midi_last_note_priority COMMAND venom_midi_last_note_priority)
+
+  add_executable(venom_midi_all_notes_off tests/midi_all_notes_off.cpp)
+  target_link_libraries(venom_midi_all_notes_off PRIVATE venom_dsp)
+  add_test(NAME venom_midi_all_notes_off COMMAND venom_midi_all_notes_off)
 endif()

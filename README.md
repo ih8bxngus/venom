@@ -23,6 +23,8 @@ This milestone provides a functional, testable synth core and a plugin wrapper w
   - `venom_core_smoke`
   - `venom_envelope_release`
   - `venom_midi_note_off`
+  - `venom_midi_last_note_priority`
+  - `venom_midi_all_notes_off`
 
 ## Get DPF (submodule)
 
