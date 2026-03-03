@@ -9,8 +9,8 @@ START_NAMESPACE_DISTRHO
 
 namespace {
 
-DISTRHO::ParameterRanges makeRanges(float def, float min, float max) {
-  DISTRHO::ParameterRanges ranges;
+ParameterRanges makeRanges(float def, float min, float max) {
+  ParameterRanges ranges;
   ranges.def = def;
   ranges.min = min;
   ranges.max = max;
@@ -48,6 +48,30 @@ const char* parameterName(uint32_t index) {
     case venom::kParamLfoDepth: return "LFO Depth";
     case venom::kParamLfoTarget: return "LFO Target";
     case venom::kParamEnvRetrigger: return "Env Retrigger";
+    case venom::kParamPolyMode: return "Poly Mode";
+    case venom::kParamUnisonCount: return "Unison Count";
+    case venom::kParamUnisonDetune: return "Unison Detune";
+    case venom::kParamUnisonSpread: return "Unison Spread";
+    case venom::kParamOsc1WavePos: return "Osc1 Wave Pos";
+    case venom::kParamOsc2WavePos: return "Osc2 Wave Pos";
+    case venom::kParamOsc3WavePos: return "Osc3 Wave Pos";
+    case venom::kParamLfoWave: return "LFO Wave";
+    case venom::kParamFM2to1: return "FM 2>1";
+    case venom::kParamFM3to1: return "FM 3>1";
+    case venom::kParamFM3to2: return "FM 3>2";
+    case venom::kParamOsc1WtBank: return "Osc1 WT Bank";
+    case venom::kParamOsc2WtBank: return "Osc2 WT Bank";
+    case venom::kParamOsc3WtBank: return "Osc3 WT Bank";
+    case venom::kParamOsc1Engine: return "Osc1 Engine";
+    case venom::kParamOsc2Engine: return "Osc2 Engine";
+    case venom::kParamOsc3Engine: return "Osc3 Engine";
+    case venom::kParamGrainSize: return "Grain Size";
+    case venom::kParamGrainDensity: return "Grain Density";
+    case venom::kParamGrainScatter: return "Grain Scatter";
+    case venom::kParamGrainPitchRand: return "Grain Pitch Rnd";
+    case venom::kParamSampleStart: return "Sample Start";
+    case venom::kParamSampleSelect: return "Sample Select";
+    case venom::kParamGrainWindow: return "Grain Window";
     default: return "Param";
   }
 }
@@ -56,7 +80,7 @@ venom::preset::Preset makePreset(const std::array<float, venom::kParameterCount>
   venom::preset::Preset preset;
   preset.name = name;
   preset.params = params;
-  preset.version = 1;
+  preset.version = 3;
   return preset;
 }
 
@@ -104,6 +128,16 @@ VenomPlugin::VenomPlugin()
 
   params_[venom::kParamEnvRetrigger] = 1.0f;
 
+  // v0.4 new parameters
+  params_[venom::kParamPolyMode] = 1.0f;       // Poly on
+  params_[venom::kParamUnisonCount] = 1.0f;     // 1 voice (no unison)
+  params_[venom::kParamUnisonDetune] = 15.0f;   // 15 cents
+  params_[venom::kParamUnisonSpread] = 0.5f;    // Half stereo
+  params_[venom::kParamOsc1WavePos] = 0.0f;     // Frame 0 (sine-like)
+  params_[venom::kParamOsc2WavePos] = 0.0f;
+  params_[venom::kParamOsc3WavePos] = 0.0f;
+  params_[venom::kParamLfoWave] = 0.0f;         // Sine LFO
+
   syncParameters();
 }
 
@@ -112,7 +146,7 @@ const char* VenomPlugin::getDescription() const { return "3-oscillator trap/hype
 const char* VenomPlugin::getMaker() const noexcept { return "venom"; }
 const char* VenomPlugin::getHomePage() const noexcept { return "https://github.com/example/venom"; }
 const char* VenomPlugin::getLicense() const noexcept { return "MIT"; }
-uint32_t VenomPlugin::getVersion() const noexcept { return d_version(0, 4, 0); }
+uint32_t VenomPlugin::getVersion() const noexcept { return d_version(0, 5, 0); }
 int64_t VenomPlugin::getUniqueId() const noexcept { return d_cconst('v', 'n', 'm', '1'); }
 
 void VenomPlugin::initParameter(uint32_t index, Parameter& parameter) {
@@ -130,7 +164,7 @@ void VenomPlugin::initParameter(uint32_t index, Parameter& parameter) {
     case venom::kParamOsc1Wave:
     case venom::kParamOsc2Wave:
     case venom::kParamOsc3Wave:
-      parameter.ranges = makeRanges(1.0f, 0.0f, 3.0f);
+      parameter.ranges = makeRanges(1.0f, 0.0f, 4.0f);
       break;
     case venom::kParamOsc1Detune:
     case venom::kParamOsc2Detune:
@@ -140,7 +174,7 @@ void VenomPlugin::initParameter(uint32_t index, Parameter& parameter) {
     case venom::kParamOsc1Pitch:
     case venom::kParamOsc2Pitch:
     case venom::kParamOsc3Pitch:
-      parameter.ranges = makeRanges(0.0f, -12.0f, 12.0f);
+      parameter.ranges = makeRanges(0.0f, -48.0f, 48.0f);
       break;
     case venom::kParamOsc1Level:
     case venom::kParamOsc2Level:
@@ -190,6 +224,77 @@ void VenomPlugin::initParameter(uint32_t index, Parameter& parameter) {
       parameter.ranges = makeRanges(1.0f, 0.0f, 1.0f);
       break;
 
+    // === v0.4 new parameters ===
+    case venom::kParamPolyMode:
+      parameter.hints = kParameterIsAutomatable | kParameterIsBoolean;
+      parameter.ranges = makeRanges(1.0f, 0.0f, 1.0f);
+      break;
+    case venom::kParamUnisonCount:
+      parameter.hints = kParameterIsAutomatable | kParameterIsInteger;
+      parameter.ranges = makeRanges(1.0f, 1.0f, 7.0f);
+      break;
+    case venom::kParamUnisonDetune:
+      parameter.ranges = makeRanges(15.0f, 0.0f, 100.0f);
+      break;
+    case venom::kParamUnisonSpread:
+      parameter.ranges = makeRanges(0.5f, 0.0f, 1.0f);
+      break;
+    case venom::kParamOsc1WavePos:
+    case venom::kParamOsc2WavePos:
+    case venom::kParamOsc3WavePos:
+      parameter.ranges = makeRanges(0.0f, 0.0f, 1.0f);
+      break;
+    case venom::kParamLfoWave:
+      parameter.hints = kParameterIsAutomatable | kParameterIsInteger;
+      parameter.ranges = makeRanges(0.0f, 0.0f, 4.0f);
+      break;
+
+    // === v0.5 Phase 1: FM Synthesis ===
+    case venom::kParamFM2to1:
+    case venom::kParamFM3to1:
+    case venom::kParamFM3to2:
+      parameter.ranges = makeRanges(0.0f, 0.0f, 1.0f);
+      break;
+
+    // === v0.5 Phase 2: Wavetable Banks ===
+    case venom::kParamOsc1WtBank:
+    case venom::kParamOsc2WtBank:
+    case venom::kParamOsc3WtBank:
+      parameter.hints = kParameterIsAutomatable | kParameterIsInteger;
+      parameter.ranges = makeRanges(0.0f, 0.0f, 9.0f);
+      break;
+
+    // === v0.5 Phase 3: Sample/Granular ===
+    case venom::kParamOsc1Engine:
+    case venom::kParamOsc2Engine:
+    case venom::kParamOsc3Engine:
+      parameter.hints = kParameterIsAutomatable | kParameterIsInteger;
+      parameter.ranges = makeRanges(0.0f, 0.0f, 2.0f);
+      break;
+    case venom::kParamGrainSize:
+      parameter.ranges = makeRanges(80.0f, 5.0f, 500.0f);
+      break;
+    case venom::kParamGrainDensity:
+      parameter.ranges = makeRanges(8.0f, 1.0f, 64.0f);
+      break;
+    case venom::kParamGrainScatter:
+      parameter.ranges = makeRanges(0.1f, 0.0f, 1.0f);
+      break;
+    case venom::kParamGrainPitchRand:
+      parameter.ranges = makeRanges(0.0f, 0.0f, 1.0f);
+      break;
+    case venom::kParamSampleStart:
+      parameter.ranges = makeRanges(0.0f, 0.0f, 1.0f);
+      break;
+    case venom::kParamSampleSelect:
+      parameter.hints = kParameterIsAutomatable | kParameterIsInteger;
+      parameter.ranges = makeRanges(0.0f, 0.0f, 4.0f);
+      break;
+    case venom::kParamGrainWindow:
+      parameter.hints = kParameterIsAutomatable | kParameterIsInteger;
+      parameter.ranges = makeRanges(0.0f, 0.0f, 2.0f);
+      break;
+
     default:
       parameter.ranges = makeRanges(0.0f, 0.0f, 1.0f);
       break;
@@ -208,13 +313,15 @@ void VenomPlugin::setParameterValue(uint32_t index, float value) {
   syncParameters();
 }
 
-void VenomPlugin::initState(uint32_t index, String& key, String& defaultValue) {
+void VenomPlugin::initState(uint32_t index, State& state) {
   if (index != 0)
     return;
 
-  key = "preset_json";
+  state.key = "preset_json";
+  state.label = "Preset JSON";
+  state.hints = kStateIsHostReadable;
   const auto json = venom::preset::PresetManager::toJson(makePreset(params_, currentPresetName_));
-  defaultValue = json.c_str();
+  state.defaultValue = json.c_str();
 }
 
 String VenomPlugin::getState(const char* key) const {

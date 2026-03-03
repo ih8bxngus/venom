@@ -11,6 +11,8 @@ set(VENOM_DSP_HEADERS
   dsp/EnvelopeADSR.hpp
   dsp/Lowpass24.hpp
   dsp/LFO.hpp
+  dsp/Wavetable.hpp
+  dsp/UnisonOscBank.hpp
   dsp/SynthVoice.hpp
 )
 
@@ -22,16 +24,25 @@ if(COMMAND dpf_add_plugin)
   dpf_add_plugin(venom
     TARGETS vst3
     UI_TYPE opengl
-    FILES ${VENOM_PLUGIN_SOURCES}
+    FILES_DSP
+      VenomPlugin.cpp
+    FILES_UI
+      VenomEditor.cpp
+      ui/NanoKnob.cpp
+      ui/WaveformSelector.cpp
+      ui/ToggleSwitch.cpp
+      ui/PresetBrowser.cpp
+      ui/WaveformVisualizer.cpp
+      ui/VirtualKeyboard.cpp
   )
 
-  target_include_directories(venom PRIVATE
+  target_include_directories(venom PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
   )
 
-  target_compile_definitions(venom PRIVATE
+  target_compile_definitions(venom PUBLIC
     DISTRHO_PLUGIN_BRAND="venom"
     DISTRHO_PLUGIN_NAME="venom"
-    DISTRHO_PLUGIN_URI="https://github.com/example/venom"
+    DISTRHO_PLUGIN_URI="https://github.com/ih8bxngus/venom"
   )
 endif()

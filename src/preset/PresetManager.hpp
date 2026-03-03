@@ -117,6 +117,36 @@ private:
       }
     }
 
+    if (parsed.size() == kOldParameterCount_v1) {
+      // Backward-compatible: load old 29-param preset with sensible defaults
+      outParams.fill(0.0f);
+      for (size_t i = 0; i < kOldParameterCount_v1; ++i)
+        outParams[i] = parsed[i];
+
+      // Fill in v0.4 defaults for missing params
+      outParams[kParamPolyMode]      = 1.0f;   // Poly on
+      outParams[kParamUnisonCount]   = 1.0f;   // No unison
+      outParams[kParamUnisonDetune]  = 15.0f;  // 15 cents
+      outParams[kParamUnisonSpread]  = 0.5f;   // 50% stereo
+      outParams[kParamOsc1WavePos]   = 0.0f;
+      outParams[kParamOsc2WavePos]   = 0.0f;
+      outParams[kParamOsc3WavePos]   = 0.0f;
+      outParams[kParamLfoWave]       = 0.0f;   // Sine LFO
+      // v0.5 defaults applied below
+      applyV3Defaults(outParams);
+      return true;
+    }
+
+    if (parsed.size() == kOldParameterCount_v2) {
+      // Backward-compatible: load 37-param (v0.4) preset with v0.5 defaults
+      outParams.fill(0.0f);
+      for (size_t i = 0; i < kOldParameterCount_v2; ++i)
+        outParams[i] = parsed[i];
+
+      applyV3Defaults(outParams);
+      return true;
+    }
+
     if (parsed.size() != outParams.size())
       return false;
 
@@ -146,6 +176,28 @@ private:
 
     if (!digits.empty())
       outVersion = std::stoi(digits);
+  }
+
+  static void applyV3Defaults(std::array<float, kParameterCount>& params) {
+    // v0.5 Phase 1: FM amounts default to 0 (no modulation)
+    params[kParamFM2to1]         = 0.0f;
+    params[kParamFM3to1]         = 0.0f;
+    params[kParamFM3to2]         = 0.0f;
+    // v0.5 Phase 2: Wavetable banks default to bank 0
+    params[kParamOsc1WtBank]     = 0.0f;
+    params[kParamOsc2WtBank]     = 0.0f;
+    params[kParamOsc3WtBank]     = 0.0f;
+    // v0.5 Phase 3: Classic engine, sensible grain defaults
+    params[kParamOsc1Engine]     = 0.0f;   // Classic
+    params[kParamOsc2Engine]     = 0.0f;
+    params[kParamOsc3Engine]     = 0.0f;
+    params[kParamGrainSize]      = 80.0f;  // 80ms
+    params[kParamGrainDensity]   = 8.0f;   // 8 grains/sec
+    params[kParamGrainScatter]   = 0.1f;
+    params[kParamGrainPitchRand] = 0.0f;
+    params[kParamSampleStart]    = 0.0f;
+    params[kParamSampleSelect]   = 0.0f;
+    params[kParamGrainWindow]    = 0.0f;   // Hann
   }
 
   static void trim(std::string& s) {

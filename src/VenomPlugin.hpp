@@ -8,7 +8,9 @@
 #include "VenomShared.hpp"
 #include "core/SynthEngine.hpp"
 
-class VenomPlugin final : public DISTRHO::Plugin {
+START_NAMESPACE_DISTRHO
+
+class VenomPlugin final : public Plugin {
 public:
   VenomPlugin();
 
@@ -25,7 +27,7 @@ protected:
   float getParameterValue(uint32_t index) const override;
   void setParameterValue(uint32_t index, float value) override;
 
-  void initState(uint32_t index, String& key, String& defaultValue) override;
+  void initState(uint32_t index, State& state) override;
   String getState(const char* key) const override;
   void setState(const char* key, const char* value) override;
 
@@ -40,3 +42,5 @@ private:
   std::vector<venom::core::MidiEvent> midiScratch_{};
   std::string currentPresetName_ = "Init";
 };
+
+END_NAMESPACE_DISTRHO
